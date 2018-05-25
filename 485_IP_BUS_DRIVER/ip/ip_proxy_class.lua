@@ -26,9 +26,14 @@ function IpProxy:Initialize()
 	self._UdpPort = 554
 	self._Username = "username"
 	self._Password = "password"
+	self._TimeDelay = 5000
+	self._Timer = CreateTimer("RECV_DATA", 5, "SECONDS", TimerCallback, false, nil)
 end
 
-
+function TimerCallback()
+     LogTrace("TimerCallback")
+     gReceiveBuffer = ""
+end
 
 --[[=============================================================================
     Camera Proxy Commands(PRX_CMD)

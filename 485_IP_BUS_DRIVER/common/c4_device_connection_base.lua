@@ -132,7 +132,8 @@ function DeviceConnectionBase:ReceivedFromCom(sData)
 
 	gReceiveBuffer = gReceiveBuffer .. sData
 	LogTrace("ReceivedFromCom  ReceiveBuffer is now {{{%s}}}", gReceiveBuffer)
-
+     hexdump(gReceiveBuffer)
+	hexdump(sData)
 	message = self:GetMessage()
 	LogTrace("ReceivedFromCom  message is now {{{%s}}}", message)
 	while (message ~= nil and message ~= "") do

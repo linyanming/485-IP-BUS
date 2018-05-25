@@ -5,14 +5,14 @@
 	If you are making your own driver then change the details below.  Note the date is in US format: Month/Day/Year
 	-->
   <manufacturer>Hiwise</manufacturer>
-  <name>IP Proxy Template</name>
-  <model>IP Proxy Template</model>
+  <name>485 IP BUS</name>
+  <model>485 IP BUS</model>
   <created>05/19/2018 8:30 AM</created>
-  <modified>05/23/2018 9:42 AM</modified>
+  <modified>05/25/2018 9:18 AM</modified>
   <!-- 
 	Each time you modify the driver update the version number below.
 	-->
-  <version>24</version>
+  <version>34</version>
   <capabilities>
     <!-- 
 		These are the modes the camera might support.  If the camera does not support H264 then remove the H264 entries

@@ -23,3 +23,11 @@ function EX_CMD.SENDDEV(tParams)
 	LogTrace(tParams)
 	gCon:SendCommand("HELLO WORLD",1,"SECONDS","normal")
 end
+
+function EX_CMD.SYNCDEV(tParams)
+	LogTrace("EX_CMD.SYNCDEV")
+	LogTrace(tParams)
+	local device_id = tParams["DEVICE_ID"]
+	KEYPAD_DEVICE.SYNC_MODE = true
+	KEYPAD_DEVICE.SYNC_DEVID = device_id
+end
