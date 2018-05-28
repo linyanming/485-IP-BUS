@@ -20,8 +20,30 @@ COM_COMMAND_RESPONSE_TIMEOUT_SECONDS = 4
 
 NETWORK_PORT = 60000
 IR_BINDING_ID = 2
-SERIAL_BINDING_ID = 1
+BUS_BINDING_ID = 1
 NETWORK_BINDING_ID = 6001
+
+
+function OnBusConnectionChanged(idBinding, class, bIsBound)
+     LogTrace("OnBusConnectionChanged")
+     local devid = C4:GetDeviceID()     
+     local devs = C4:GetBoundConsumerDevices(devid , idBinding)  
+     local item = ""
+	local i = 1
+	BUS_CONN_TABLE = devs
+	if(devs ~= nil) then
+    	for id,name in pairs(BUS_CONN_TABLE) do
+    	    print("id = " .. id .. " ".. type(id) .. "name = " .. name)
+	    if(i == 1) then
+		   item = item .. name
+	    else
+	        item = item .. "," .. name
+	    end
+	    i = i+1
+    	end
+	C4:UpdatePropertyList("BindDevice", item)
+	end
+end
 
 --[[=============================================================================
     OnSerialConnectionChanged(idBinding, class, bIsBound)

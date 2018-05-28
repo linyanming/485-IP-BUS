@@ -428,10 +428,9 @@ end
 function OnBindingChanged(idBinding, class, bIsBound)
 	
 	LogTrace("OnBindingChanged(): idBinding = " .. tostring(idBinding) .. ", class = " .. class .. ", bIsBound = " .. tostring(bIsBound))
-	if (idBinding == SERIAL_BINDING_ID) then
-		gIsSerialConnected = bIsBound
-		SetControlMethod()
-		OnSerialConnectionChanged(idBinding, class, bIsBound)
+	
+	if (idBinding == BUS_BINDING_ID) then
+	    OnBusConnectionChanged(idBinding, class, bIsBound)
 	elseif (idBinding == IR_BINDING_ID) then
 		gIsIRConnected = bIsBound
 		SetControlMethod()

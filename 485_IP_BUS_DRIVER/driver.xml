@@ -8,11 +8,11 @@
   <name>485 IP BUS</name>
   <model>485 IP BUS</model>
   <created>05/19/2018 8:30 AM</created>
-  <modified>05/25/2018 9:18 AM</modified>
+  <modified>05/28/2018 2:15 PM</modified>
   <!-- 
 	Each time you modify the driver update the version number below.
 	-->
-  <version>34</version>
+  <version>50</version>
   <capabilities>
     <!-- 
 		These are the modes the camera might support.  If the camera does not support H264 then remove the H264 entries
@@ -150,6 +150,18 @@
         <default>60000</default>
         <minimum>10000</minimum>
         <maximum>65535</maximum>
+        <multiselect>false</multiselect>
+      </property>
+      <property>
+        <name>BindDevice</name>
+        <type>LIST</type>
+        <default>NULL</default>
+        <items>
+          <item>NULL</item>
+        </items>
+        <readonly>false</readonly>
+        <multiselect>false</multiselect>
+        <password>false</password>
       </property>
     </properties>
     <!-- 

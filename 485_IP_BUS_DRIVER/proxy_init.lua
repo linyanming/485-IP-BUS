@@ -18,7 +18,7 @@ end
 
 function ON_DRIVER_EARLY_INIT.proxy_init()
 	-- declare and initialize global variables
-	KEYPAD_DEVICE.init()
+
 end
 
 function ON_DRIVER_INIT.proxy_init()
@@ -35,6 +35,7 @@ function ON_DRIVER_LATEINIT.proxy_init()
 --    C4:urlSetTimeout (20)
 
 --	gCameraProxy:dev_PropertyDefaults()
+    
 end
 
 function IP_DEVICES_ADDR.init()
@@ -51,8 +52,3 @@ function IP_DEVICES_ADDR.init()
      end
 end
 
-function KEYPAD_DEVICE.init()
-     KEYPAD_DEVICE.DATA_LEN = 8
-	KEYPAD_DEVICE.SYNC_DEVID = 0
-	KEYPAD_DEVICE.SYNC_MODE = false
-end

@@ -506,10 +506,9 @@ end
 function OnBindingChanged(idBinding, class, bIsBound)
 	
 	LogTrace("OnBindingChanged(): idBinding = " .. tostring(idBinding) .. ", class = " .. class .. ", bIsBound = " .. tostring(bIsBound))
-	if (idBinding == SERIAL_BINDING_ID) then
-		gIsSerialConnected = bIsBound
-		SetControlMethod()
-		OnSerialConnectionChanged(idBinding, class, bIsBound)
+	
+	if (idBinding == BUS_BINDING_ID) then
+	    OnBusConnectionChanged(idBinding, class, bIsBound)
 	elseif (idBinding == IR_BINDING_ID) then
 		gIsIRConnected = bIsBound
 		SetControlMethod()
@@ -3519,8 +3518,30 @@ COM_COMMAND_RESPONSE_TIMEOUT_SECONDS = 4
 
 NETWORK_PORT = 60000
 IR_BINDING_ID = 2
-SERIAL_BINDING_ID = 1
+BUS_BINDING_ID = 1
 NETWORK_BINDING_ID = 6001
+
+
+function OnBusConnectionChanged(idBinding, class, bIsBound)
+     LogTrace("OnBusConnectionChanged")
+     local devid = C4:GetDeviceID()     
+     local devs = C4:GetBoundConsumerDevices(devid , idBinding)  
+     local item = ""
+	local i = 1
+	BUS_CONN_TABLE = devs
+	if(devs ~= nil) then
+    	for id,name in pairs(BUS_CONN_TABLE) do
+    	    print("id = " .. id .. " ".. type(id) .. "name = " .. name)
+	    if(i == 1) then
+		   item = item .. name
+	    else
+	        item = item .. "," .. name
+	    end
+	    i = i+1
+    	end
+	C4:UpdatePropertyList("BindDevice", item)
+	end
+end
 
 --[[=============================================================================
     OnSerialConnectionChanged(idBinding, class, bIsBound)
@@ -3745,15 +3766,16 @@ function GetMessage()
 	   
 		--TODO: Implement a routine which will parse out a single message
 		--      from the receive buffer(gReceiveBuffer)
-		if(#gReceiveBuffer >= KEYPAD_DEVICE.DATA_LEN) then
+		--[[if(#gReceiveBuffer >= KEYPAD_DEVICE.DATA_LEN) then
 		   KillTimer(gIpProxy._Timer)
 		   message = string.sub(gReceiveBuffer,1,KEYPAD_DEVICE.DATA_LEN)
 		   gReceiveBuffer = string.sub(KEYPAD_DEVICE.DATA_LEN+1,#gReceiveBuffer)
 	     else
 		   StartTimer(gIpProxy._Timer)
-	     end
+	     end]]
+		message = gReceiveBuffer
 		hexdump(message)
-		return message
+		--return message
 	end
 
 	--TODO: Once a complete message is found in the buffer remove it and 
@@ -3787,72 +3809,7 @@ function HandleMessage(message)
 	else
 		LogTrace("HandleMessage. Message is ==>%s<==", message)
 		hexdump(message)
-		local msg_data = {}
-		for i = 1,#message do
-		   msg_data[i] = string.byte(message,i)
-		   print(i .. ":" .. msg_data[i])
-	     end
-		if(msg_data[1] == 0x55 and msg_data[2] == 0x2a and msg_data[3] == 0x30) then
-		   local sum = 0
-		   for i = 1,7 do
-		       sum = sum + msg_data[i]
-		   end
-		   if(bit.band(sum,0xff) == msg_data[8]) then
-			  local dev_id = bit.band(msg_data[4],0xf8)/8
-			  local btn_id = bit.band(msg_data[4],0x07)
-			  LogTrace("dev_id = %d btn_id = %d", dev_id,btn_id)
-			  if(DEVICE_ADDR[dev_id] ~= nil) then
-				 LogTrace("DEVICE_ADDR[dev_id] ~= nil")
-				 if(KEYPAD_DEVICE.SYNC_MODE == true) then
-				    LogTrace("SYNC SUCCESS 1")
-				    DEVICE_ADDR[dev_id] = KEYPAD_DEVICE.SYNC_DEVID
-					KEYPAD_DEVICE.SYNC_MODE = false
-					KEYPAD_DEVICE.SYNC_DEVID = 0
-				 else
-				     local devid = C4:GetDeviceID()     
-				     local devs = C4:GetBoundConsumerDevices(devid , 1)   
-					 local connected = false
-					 print("devid = " .. devid)
-					 
-				     if (devs ~= nil) then
-					    LogTrace("devs ~= nil")
-					    for id,name in pairs(devs) do
-					       print("id = " .. id .. " ".. type(id) .. "name = " .. name)
-					       print("DEVICE_ADDR[dev_id] = " .. DEVICE_ADDR[dev_id])
-						   if(tostring(id) == DEVICE_ADDR[dev_id]) then
-							  LogTrace("connected == true")
-						       connected = true
-							  break
-						   end
-					    end
-				     end
-					if(connected == true) then
-					    LogTrace("SEND BUTTON PRESS")
-					    C4:SendToDevice(DEVICE_ADDR[dev_id],"BTNPRESS",{BUTTON_ID = btn_id})
-				     else
-					    LogTrace("connected == false")
-					    DEVICE_ADDR[dev_id] = nil
-				     end
-				     KEYPAD_DEVICE.SYNC_MODE = false
-				     KEYPAD_DEVICE.SYNC_DEVID = 0
-				 end
-			  else
-			      if(KEYPAD_DEVICE.SYNC_MODE == true) then
-			        LogTrace("SYNC SUCCESS 2")
-				    DEVICE_ADDR[dev_id] = KEYPAD_DEVICE.SYNC_DEVID
-					KEYPAD_DEVICE.SYNC_MODE = false
-					KEYPAD_DEVICE.SYNC_DEVID = 0
-				 else
-				     LogTrace("KEYPAD_DEVICE.SYNC_MODE == false")
-				 end
-			  end
-		   else
-			  LogTrace("Data check fail")
-		       gReceiveBuffer = ""
-		   end
-	     else
-		   LogTrace("Data check fail 2")
-		end
+		gIpProxy:SendToConnDevice(message)
 	end
 
 	-- TODO: Parse messages and DispatchMessage
@@ -4142,7 +4099,7 @@ end
 
 function ON_DRIVER_EARLY_INIT.proxy_init()
 	-- declare and initialize global variables
-	KEYPAD_DEVICE.init()
+
 end
 
 function ON_DRIVER_INIT.proxy_init()
@@ -4159,6 +4116,7 @@ function ON_DRIVER_LATEINIT.proxy_init()
 --    C4:urlSetTimeout (20)
 
 --	gCameraProxy:dev_PropertyDefaults()
+    
 end
 
 function IP_DEVICES_ADDR.init()
@@ -4175,11 +4133,6 @@ function IP_DEVICES_ADDR.init()
      end
 end
 
-function KEYPAD_DEVICE.init()
-     KEYPAD_DEVICE.DATA_LEN = 8
-	KEYPAD_DEVICE.SYNC_DEVID = 0
-	KEYPAD_DEVICE.SYNC_MODE = false
-end
  end)
 package.preload['properties'] = (function (...)
 --[[=============================================================================
@@ -4193,6 +4146,26 @@ if (TEMPLATE_VERSION ~= nil) then
 	TEMPLATE_VERSION.properties = "2017.01.13"
 end
 
+function ON_PROPERTY_CHANGED.BindDevice(propertyValue)
+     local devid = C4:GetDeviceID()     
+     local devs = C4:GetBoundConsumerDevices(devid , BUS_BINDING_ID)  
+     local item = ""
+	local i = 1
+     BUS_CONN_TABLE = devs
+     if(devs ~= nil) then
+    	for id,name in pairs(BUS_CONN_TABLE) do
+    	    print("id = " .. id .. " ".. type(id) .. "name = " .. name)
+	    if(i == 1) then
+		   item = item .. name
+	    else
+	        item = item .. "," .. name
+	    end
+	    i = i+1
+    	end
+	C4:UpdatePropertyList("BindDevice", item)
+	end
+
+end
 --[[
 function ON_PROPERTY_CHANGED.MJPEGStreamID(propertyValue)
 	gCameraProxy._MJPEG_Stream_ID = tonumber(propertyValue)
@@ -4272,6 +4245,21 @@ function TimerCallback()
      gReceiveBuffer = ""
 end
 
+function IpProxy:SendToConnDevice(msg)
+     LogTrace("SendToConnDevice")
+     hexdump(msg)
+	print("msglen = " .. #msg .. "type = " .. type(msg))
+	local message = ""
+	for i = 1,#msg do
+	    message = message .. string.format("%02x",string.byte(msg,i))
+    	    print("message:" .. message)
+	end
+	if(BUS_CONN_TABLE ~= nil) then
+	    for id,name in pairs(BUS_CONN_TABLE) do
+		   C4:SendToDevice(id,"RECVMSG",{MESSAGE = message})
+	    end
+	end
+end
 --[[=============================================================================
     Camera Proxy Commands(PRX_CMD)
 ===============================================================================]]

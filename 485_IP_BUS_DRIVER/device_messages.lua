@@ -29,15 +29,16 @@ function GetMessage()
 	   
 		--TODO: Implement a routine which will parse out a single message
 		--      from the receive buffer(gReceiveBuffer)
-		if(#gReceiveBuffer >= KEYPAD_DEVICE.DATA_LEN) then
+		--[[if(#gReceiveBuffer >= KEYPAD_DEVICE.DATA_LEN) then
 		   KillTimer(gIpProxy._Timer)
 		   message = string.sub(gReceiveBuffer,1,KEYPAD_DEVICE.DATA_LEN)
 		   gReceiveBuffer = string.sub(KEYPAD_DEVICE.DATA_LEN+1,#gReceiveBuffer)
 	     else
 		   StartTimer(gIpProxy._Timer)
-	     end
+	     end]]
+		message = gReceiveBuffer
 		hexdump(message)
-		return message
+		--return message
 	end
 
 	--TODO: Once a complete message is found in the buffer remove it and 
@@ -71,72 +72,7 @@ function HandleMessage(message)
 	else
 		LogTrace("HandleMessage. Message is ==>%s<==", message)
 		hexdump(message)
-		local msg_data = {}
-		for i = 1,#message do
-		   msg_data[i] = string.byte(message,i)
-		   print(i .. ":" .. msg_data[i])
-	     end
-		if(msg_data[1] == 0x55 and msg_data[2] == 0x2a and msg_data[3] == 0x30) then
-		   local sum = 0
-		   for i = 1,7 do
-		       sum = sum + msg_data[i]
-		   end
-		   if(bit.band(sum,0xff) == msg_data[8]) then
-			  local dev_id = bit.band(msg_data[4],0xf8)/8
-			  local btn_id = bit.band(msg_data[4],0x07)
-			  LogTrace("dev_id = %d btn_id = %d", dev_id,btn_id)
-			  if(DEVICE_ADDR[dev_id] ~= nil) then
-				 LogTrace("DEVICE_ADDR[dev_id] ~= nil")
-				 if(KEYPAD_DEVICE.SYNC_MODE == true) then
-				    LogTrace("SYNC SUCCESS 1")
-				    DEVICE_ADDR[dev_id] = KEYPAD_DEVICE.SYNC_DEVID
-					KEYPAD_DEVICE.SYNC_MODE = false
-					KEYPAD_DEVICE.SYNC_DEVID = 0
-				 else
-				     local devid = C4:GetDeviceID()     
-				     local devs = C4:GetBoundConsumerDevices(devid , 1)   
-					 local connected = false
-					 print("devid = " .. devid)
-					 
-				     if (devs ~= nil) then
-					    LogTrace("devs ~= nil")
-					    for id,name in pairs(devs) do
-					       print("id = " .. id .. " ".. type(id) .. "name = " .. name)
-					       print("DEVICE_ADDR[dev_id] = " .. DEVICE_ADDR[dev_id])
-						   if(tostring(id) == DEVICE_ADDR[dev_id]) then
-							  LogTrace("connected == true")
-						       connected = true
-							  break
-						   end
-					    end
-				     end
-					if(connected == true) then
-					    LogTrace("SEND BUTTON PRESS")
-					    C4:SendToDevice(DEVICE_ADDR[dev_id],"BTNPRESS",{BUTTON_ID = btn_id})
-				     else
-					    LogTrace("connected == false")
-					    DEVICE_ADDR[dev_id] = nil
-				     end
-				     KEYPAD_DEVICE.SYNC_MODE = false
-				     KEYPAD_DEVICE.SYNC_DEVID = 0
-				 end
-			  else
-			      if(KEYPAD_DEVICE.SYNC_MODE == true) then
-			        LogTrace("SYNC SUCCESS 2")
-				    DEVICE_ADDR[dev_id] = KEYPAD_DEVICE.SYNC_DEVID
-					KEYPAD_DEVICE.SYNC_MODE = false
-					KEYPAD_DEVICE.SYNC_DEVID = 0
-				 else
-				     LogTrace("KEYPAD_DEVICE.SYNC_MODE == false")
-				 end
-			  end
-		   else
-			  LogTrace("Data check fail")
-		       gReceiveBuffer = ""
-		   end
-	     else
-		   LogTrace("Data check fail 2")
-		end
+		gIpProxy:SendToConnDevice(message)
 	end
 
 	-- TODO: Parse messages and DispatchMessage

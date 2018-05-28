@@ -35,6 +35,21 @@ function TimerCallback()
      gReceiveBuffer = ""
 end
 
+function IpProxy:SendToConnDevice(msg)
+     LogTrace("SendToConnDevice")
+     hexdump(msg)
+	print("msglen = " .. #msg .. "type = " .. type(msg))
+	local message = ""
+	for i = 1,#msg do
+	    message = message .. string.format("%02x",string.byte(msg,i))
+    	    print("message:" .. message)
+	end
+	if(BUS_CONN_TABLE ~= nil) then
+	    for id,name in pairs(BUS_CONN_TABLE) do
+		   C4:SendToDevice(id,"RECVMSG",{MESSAGE = message})
+	    end
+	end
+end
 --[[=============================================================================
     Camera Proxy Commands(PRX_CMD)
 ===============================================================================]]
