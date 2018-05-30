@@ -8,11 +8,11 @@
   <name>485 IP BUS</name>
   <model>485 IP BUS</model>
   <created>05/19/2018 8:30 AM</created>
-  <modified>05/28/2018 2:15 PM</modified>
+  <modified>05/30/2018 2:00 PM</modified>
   <!-- 
 	Each time you modify the driver update the version number below.
 	-->
-  <version>50</version>
+  <version>54</version>
   <capabilities>
     <!-- 
 		These are the modes the camera might support.  If the camera does not support H264 then remove the H264 entries
@@ -79,6 +79,7 @@
       <classes>
         <class>
           <classname>TCP</classname>
+          <autobind>true</autobind>
           <ports>
             <port>
               <number>60000</number>
