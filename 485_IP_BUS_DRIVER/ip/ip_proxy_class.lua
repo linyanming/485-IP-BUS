@@ -21,18 +21,29 @@ end
 
 function IpProxy:Initialize()
 	-- create and initialize member variables
-	self._Address = "localhost"
-	self._TcpPort = 80
-	self._UdpPort = 554
-	self._Username = "username"
-	self._Password = "password"
-	self._TimeDelay = 5000
-	self._Timer = CreateTimer("RECV_DATA", 5, "SECONDS", TimerCallback, false, nil)
+     self._MsgTable = {}
+	self._MsgPos = 1
+	self._MsgSendPos = 1
+	self._MsgTableMax = 5000
+	self._Timer = CreateTimer("SEND_DATA", 100, "MILLISECONDS", TimerCallback, true, nil)
 end
 
 function TimerCallback()
-     LogTrace("TimerCallback")
-     gReceiveBuffer = ""
+ --    LogTrace("TimerCallback")
+     if(gCon._IsConnected) then
+	    if(gCon._IsOnline) then
+		   if(gIpProxy._MsgTable[gIpProxy._MsgSendPos] ~= nil and gIpProxy._MsgTable[gIpProxy._MsgSendPos] ~= "") then
+			  hexdump(gIpProxy._MsgTable[gIpProxy._MsgSendPos])
+			  gCon:SendCommand(gIpProxy._MsgTable[gIpProxy._MsgSendPos],1,"SECONDS","CONTROL_CMD")
+			  gIpProxy._MsgTable[gIpProxy._MsgSendPos] = ""
+			  if(gIpProxy._MsgSendPos == gIpProxy._MsgTableMax) then
+				 gIpProxy._MsgSendPos = 1
+			  else
+				 gIpProxy._MsgSendPos = gIpProxy._MsgSendPos + 1
+			  end
+		   end
+	    end
+     end
 end
 
 function IpProxy:SendToConnDevice(msg)

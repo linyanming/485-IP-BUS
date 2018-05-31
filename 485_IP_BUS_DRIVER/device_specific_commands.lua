@@ -43,7 +43,15 @@ function EX_CMD.SENDCMD(tParams)
             tmp_msg = tmp_msg .. string.pack("b",temp)
 	    end
 	    hexdump(tmp_msg)
-	    gCon:SendCommand(tmp_msg,1,"SECONDS","LED_CONTROL")
+	 --   if(gIpProxy._MsgTable[gIpProxy._MsgPos] == nil or gIpProxy._MsgTable[gIpProxy._MsgPos] == "") then
+		   gIpProxy._MsgTable[gIpProxy._MsgPos] = tmp_msg
+		   if(gIpProxy._MsgPos == gIpProxy._MsgTableMax) then
+			  gIpProxy._MsgPos = 1
+		   else
+			  gIpProxy._MsgPos = gIpProxy._MsgPos + 1
+		   end
+	 --   end
+	  --  gCon:SendCommand(tmp_msg,1,"SECONDS","LED_CONTROL")
 	end
 
 	

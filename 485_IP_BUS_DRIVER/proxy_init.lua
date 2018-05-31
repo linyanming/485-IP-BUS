@@ -32,10 +32,7 @@ function ON_DRIVER_INIT.proxy_init()
 end
 
 function ON_DRIVER_LATEINIT.proxy_init()
---    C4:urlSetTimeout (20)
-
---	gCameraProxy:dev_PropertyDefaults()
-    
+     StartTimer(gIpProxy._Timer)
 end
 
 function IP_DEVICES_ADDR.init()
